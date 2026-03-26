@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  email-triage-env:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "7860:7860"
+    volumes:
+      - .:/app
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - REPLY_GRADER_MODEL=${REPLY_GRADER_MODEL:-gpt-4o-mini}
+    restart: always

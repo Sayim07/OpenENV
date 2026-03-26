@@ -1,0 +1,15 @@
+task: basic_triage
+inbox_size: 20
+step_budget: 30
+sender_distribution:
+  executive: 4
+  manager: 4
+  peer: 4
+  external: 4
+  spam: 4
+grader: easy
+reward_weights:
+  classification: 0.40
+  priority: 0.25
+  delegation: 0.20
+  completion: 0.15

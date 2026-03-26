@@ -1,0 +1,10 @@
+name: email-triage-env
+version: 1.0.0
+tags: [email, triage, nlp, business-process, real-world]
+tasks: [basic_triage, priority_ranking, triage_with_drafting]
+action_space: discrete (8 actions)
+observation_space: structured dict (12 fields)
+reward_range: [-1.0, 1.0]
+max_episode_steps: 60  # Hard (45 Medium, 30 Easy)
+render_modes: [text, json]
+python_requires: ">=3.10"

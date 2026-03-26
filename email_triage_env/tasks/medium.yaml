@@ -1,0 +1,12 @@
+task: priority_ranking
+inbox_size: 35
+step_budget: 45
+spoofed_executives: 3
+ambiguous_threads: 6
+max_snooze_actions: 2
+grader: medium
+reward_weights:
+  classification: 0.40
+  priority: 0.25
+  delegation: 0.20
+  completion: 0.15
