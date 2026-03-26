@@ -61,15 +61,20 @@ def health_check():
 @app.get("/reset")
 @app.post("/reset")
 def env_reset(req: Optional[ResetRequest] = None):
-    # Support both GET (manual trigger) and POST (automated trigger)
-    if req is None:
-        req = ResetRequest()
+    # Definitive fix for 'Internal Server Error' when calling via browser
+    task = "easy"
+    seed = None
+    
+    if req:
+        task = getattr(req, "task", "easy")
+        seed = getattr(req, "seed", None)
 
     global global_env
     if global_env is None:
         global_env = email_triage_env.make()
     
-    obs, info = global_env.reset(seed=req.seed, options={"task": req.task})
+    obs, info = global_env.reset(seed=seed, options={"task": task})
+
     
     # reset telemetry on fresh start
     global TELEMETRY
