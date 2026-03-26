@@ -58,8 +58,13 @@ def health_check():
     """Returns HTTP 200"""
     return {"status": "ok"}
 
+@app.get("/reset")
 @app.post("/reset")
-def env_reset(req: ResetRequest):
+def env_reset(req: Optional[ResetRequest] = None):
+    # Support both GET (manual trigger) and POST (automated trigger)
+    if req is None:
+        req = ResetRequest()
+
     global global_env
     if global_env is None:
         global_env = email_triage_env.make()
@@ -147,6 +152,7 @@ async def add_trajectory(data: dict):
     return {"status": "success", "trajectory": entry}
 
 # Serve the Next.js static build from dashboard/out
+
 # --- LAST BLOCK: Serving Frontend Static Files ---
 if os.path.exists("dashboard/out"):
     app.mount("/", StaticFiles(directory="dashboard/out", html=True), name="frontend")
@@ -158,5 +164,6 @@ else:
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=7860)
+
 
 
