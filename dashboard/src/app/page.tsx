@@ -284,7 +284,7 @@ export default function Home() {
 
   useEffect(() => {
     const checkBackend = () => {
-      fetch("http://127.0.0.1:7860/stats")
+      fetch("http://localhost:7860/stats")
         .then((res) => res.json())
         .then((data) => {
           setStatus("Operational");
@@ -300,6 +300,7 @@ export default function Home() {
         })
         .catch(() => setStatus("Offline"));
     };
+
     checkBackend();
     const interval = setInterval(checkBackend, 1000);
     return () => clearInterval(interval);
