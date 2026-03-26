@@ -60,20 +60,24 @@ def health_check():
 
 @app.get("/reset")
 @app.post("/reset")
-def env_reset(req: Optional[ResetRequest] = None):
-    # Definitive fix for 'Internal Server Error' when calling via browser
+def env_reset(data: Any = None):
+    # The MOST ROBUST fix for browser-based triggering
     task = "easy"
     seed = None
     
-    if req:
-        task = getattr(req, "task", "easy")
-        seed = getattr(req, "seed", None)
+    if isinstance(data, dict):
+        task = data.get("task", "easy")
+        seed = data.get("seed", None)
+    elif hasattr(data, "task"): # Handle if it actually is a ResetRequest
+        task = data.task
+        seed = data.seed
 
     global global_env
     if global_env is None:
         global_env = email_triage_env.make()
     
     obs, info = global_env.reset(seed=seed, options={"task": task})
+
 
     
     # reset telemetry on fresh start
