@@ -82,7 +82,7 @@ if __name__ == "__main__":
     except:
         pass
 
-    for i in range(1, 4):
+    for i in range(1, 100):
         run_mock_episode("easy", "mock-agent-fast", i)
         time.sleep(2)
         

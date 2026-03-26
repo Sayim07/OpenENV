@@ -271,6 +271,7 @@ export default function Home() {
     session_id: "",
   });
   const logsEndRef = useRef<HTMLDivElement>(null);
+  const logsContainerRef = useRef<HTMLDivElement>(null);
   // Generated only on client to avoid SSR hydration mismatch
   const [sessionId, setSessionId] = useState("");
   useEffect(() => {
@@ -304,9 +305,15 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
-  // Auto-scroll logs to bottom
+  // Auto-scroll logs to bottom only if already near bottom
   useEffect(() => {
-    logsEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const container = logsContainerRef.current;
+    if (!container) return;
+    const isScrolledToBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 100;
+    if (isScrolledToBottom) {
+      // Use scrollTo instead of scrollIntoView to prevent dragging the parent page's master scrollbar
+      container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
+    }
   }, [stats.logs]);
 
   const navLabel =
@@ -556,7 +563,7 @@ export default function Home() {
                       <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
                     </div>
 
-                    <div className="space-y-2 max-h-[460px] overflow-y-auto pr-1">
+                    <div ref={logsContainerRef} className="space-y-2 max-h-[460px] overflow-y-auto pr-1">
                       {stats.logs.length === 0 ? (
                         <p className="text-slate-600 italic">
                           No activity detected. Start the backend server and run
