@@ -284,7 +284,13 @@ export default function Home() {
 
   useEffect(() => {
     const checkBackend = () => {
-      fetch("http://localhost:7860/stats")
+      // Determine backend URL: use window location for production/cloud environments
+      const backendUrl = window.location.hostname === "localhost" 
+        ? "http://localhost:7860/stats" 
+        : "/stats";
+        
+      fetch(backendUrl)
+
         .then((res) => res.json())
         .then((data) => {
           setStatus("Operational");
