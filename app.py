@@ -147,6 +147,7 @@ async def add_trajectory(data: dict):
     return {"status": "success", "trajectory": entry}
 
 # Serve the Next.js static build from dashboard/out
+# --- Static File Serving (Must be LAST to avoid swallowing API routes) ---
 if os.path.exists("dashboard/out"):
     app.mount("/", StaticFiles(directory="dashboard/out", html=True), name="frontend")
 else:
@@ -157,3 +158,4 @@ else:
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=7860)
+
