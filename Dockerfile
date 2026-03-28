@@ -36,6 +36,6 @@ EXPOSE 7860
 
 # Add a HEALTHCHECK that imports the environment and calls reset()
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD python -c "import email_triage_env; email_triage_env.make().reset(); print('OK')" || exit 1
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:7860/health')" || exit 1
 
 CMD ["python", "app.py"]
