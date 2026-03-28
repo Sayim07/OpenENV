@@ -1,11 +1,17 @@
 import os
+import sys
+from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Optional, Dict, Any, List
 from datetime import datetime, timezone
-import email_triage_env
+
+# Add email_triage_env to path
+sys.path.insert(0, str(Path(__file__).parent / "email_triage_env"))
+from email_triage_env.env import EmailTriageEnv, make
+from email_triage_env.models import Action, ActionType
 
 app = FastAPI(title="OpenEnv Email Triage Environment")
 
@@ -61,35 +67,34 @@ def health_check():
 @app.get("/reset")
 @app.post("/reset")
 def env_reset(data: Any = None):
-    # The MOST ROBUST fix for browser-based triggering
+    # Extract task and seed from request
     task = "easy"
     seed = None
     
     if isinstance(data, dict):
         task = data.get("task", "easy")
         seed = data.get("seed", None)
-    elif hasattr(data, "task"): # Handle if it actually is a ResetRequest
+    elif hasattr(data, "task"):
         task = data.task
         seed = data.seed
 
     global global_env
-    if global_env is None:
-        global_env = email_triage_env.make()
+    # Create new environment with the specified task
+    global_env = make(task=task)
     
-    obs, info = global_env.reset(seed=seed, options={"task": task})
-
-
+    # Reset and get observation
+    obs = global_env.reset(seed=seed)
     
-    # reset telemetry on fresh start
+    # Reset telemetry on fresh start
     global TELEMETRY
     TELEMETRY.update({
-        "total_emails": info.get("total_emails", 0) if info else 0,
+        "total_emails": len(global_env._inbox),
         "processed": 0,
         "success_rate": 0.0,
         "logs": ["# Environment Reset"]
     })
     
-    return {"observation": obs, "info": info}
+    return {"observation": obs.model_dump() if hasattr(obs, 'model_dump') else str(obs), "info": {}}
 
 @app.post("/step")
 def env_step(req: StepRequest):
@@ -97,7 +102,26 @@ def env_step(req: StepRequest):
     if global_env is None:
         raise HTTPException(status_code=400, detail="Environment not reset")
     
-    obs, reward, done, truncated, info = global_env.step(req.action)
+    # Parse the action string
+    action_str = req.action.upper()
+    
+    # Create Action object
+    if action_str == "ARCHIVE":
+        action = Action(action_type=ActionType.ARCHIVE, payload={})
+    elif action_str == "LABEL_URGENT":
+        action = Action(action_type=ActionType.LABEL_URGENT, payload={})
+    elif action_str == "ESCALATE":
+        action = Action(action_type=ActionType.ESCALATE, payload={})
+    elif action_str == "FLAG_SPAM":
+        action = Action(action_type=ActionType.FLAG_SPAM, payload={})
+    elif action_str == "SNOOZE":
+        action = Action(action_type=ActionType.SNOOZE, payload={})
+    elif action_str == "NO_OP":
+        action = Action(action_type=ActionType.NO_OP, payload={})
+    else:
+        raise HTTPException(status_code=400, detail=f"Unknown action: {action_str}")
+    
+    obs, reward, done, info = global_env.step(action)
     
     # Update telemetry
     global TELEMETRY
@@ -106,10 +130,9 @@ def env_step(req: StepRequest):
     TELEMETRY["logs"] = TELEMETRY["logs"][-100:]
     
     return {
-        "observation": obs,
+        "observation": obs.model_dump() if hasattr(obs, 'model_dump') else str(obs),
         "reward": reward,
         "done": done,
-        "truncated": truncated,
         "info": info
     }
 
