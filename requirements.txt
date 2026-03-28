@@ -4,5 +4,6 @@ pydantic[email]==2.5.3
 openai==2.30.0
 python-dotenv==1.0.0
 httpx==0.28.1
+requests==2.31.0
 # Local environment will be installed via Dockerfile directly
 
