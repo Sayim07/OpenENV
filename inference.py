@@ -210,6 +210,10 @@ def run_episode(env=None, task: str = "easy", seed: int = 42) -> float:
     obs = env.reset(seed=seed)
     done = False
     episode_score = 0.0
+    step_count = 0
+
+    # Print START block for structured output
+    print(f"[START] task={task}", flush=True)
 
     while not done:
         obs_dict = obs.model_dump() if hasattr(obs, "model_dump") else dict(obs)
@@ -219,10 +223,17 @@ def run_episode(env=None, task: str = "easy", seed: int = 42) -> float:
             action_type=ActionType(action_dict["action_type"]),
             payload=action_dict.get("payload", {}),
         )
-        obs, _reward, done, info = env.step(action)
+        obs, reward, done, info = env.step(action)
+        step_count += 1
+
+        # Print STEP block for each step
+        print(f"[STEP] step={step_count} reward={reward:.4f}", flush=True)
 
         if done:
             episode_score = info.get("episode_score", 0.0)
+
+    # Print END block with final results
+    print(f"[END] task={task} score={episode_score:.4f} steps={step_count}", flush=True)
 
     return episode_score
 
@@ -243,9 +254,8 @@ if __name__ == "__main__":
     scores = []
     for i in range(args.episodes):
         score = run_episode(task=args.task, seed=args.seed + i)
-        print(f"Episode {i + 1}: score = {score:.4f}")
         scores.append(score)
 
     if scores:
         mean = sum(scores) / len(scores)
-        print(f"\nMean score over {args.episodes} episode(s): {mean:.4f}")
+        print(f"\nMean score over {args.episodes} episode(s): {mean:.4f}", flush=True)
