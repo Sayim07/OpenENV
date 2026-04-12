@@ -206,6 +206,9 @@ def run_episode(env=None, task: str = "easy", seed: int = 42) -> float:
     """
     if env is None:
         env = make(task=task)
+        actual_task = task
+    else:
+        actual_task = getattr(env, "task_level", task)
 
     obs = env.reset(seed=seed)
     done = False
@@ -213,7 +216,8 @@ def run_episode(env=None, task: str = "easy", seed: int = 42) -> float:
     step_count = 0
 
     # Print START block for structured output
-    print(f"[START] task={task}", flush=True)
+    sys.stdout.write(f"[START] task={actual_task}\n")
+    sys.stdout.flush()
 
     while not done:
         obs_dict = obs.model_dump() if hasattr(obs, "model_dump") else dict(obs)
@@ -227,13 +231,15 @@ def run_episode(env=None, task: str = "easy", seed: int = 42) -> float:
         step_count += 1
 
         # Print STEP block for each step
-        print(f"[STEP] step={step_count} reward={reward:.4f}", flush=True)
+        sys.stdout.write(f"[STEP] step={step_count} reward={reward:.4f}\n")
+        sys.stdout.flush()
 
         if done:
             episode_score = info.get("episode_score", 0.0)
 
     # Print END block with final results
-    print(f"[END] task={task} score={episode_score:.4f} steps={step_count}", flush=True)
+    sys.stdout.write(f"[END] task={actual_task} score={episode_score:.4f} steps={step_count}\n")
+    sys.stdout.flush()
 
     return episode_score
 
